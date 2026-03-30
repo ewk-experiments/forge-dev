@@ -4384,6 +4384,10 @@ async function handleAuth() {
   const errorEl = document.getElementById('authError');
   const btn = document.getElementById('authBtn');
   
+  // Determine mode from button text
+  const isSignup = btn.textContent.includes('CREATE');
+  const mode = isSignup ? 'signup' : 'login';
+  
   if (!email || !password) { errorEl.textContent = 'Email and password required'; return; }
   if (password.length < 6) { errorEl.textContent = 'Password must be 6+ characters'; return; }
   
@@ -4392,7 +4396,7 @@ async function handleAuth() {
   errorEl.textContent = '';
   
   try {
-    const endpoint = authMode === 'login' ? '/auth/login' : '/auth/signup';
+    const endpoint = mode === 'login' ? '/auth/login' : '/auth/signup';
     let res;
     // Retry once on failure (Modal cold start can cause first request to fail)
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -4427,7 +4431,7 @@ async function handleAuth() {
     localStorage.setItem('forge_user', JSON.stringify(authUser));
     
     showApp(data.email);
-    toast(authMode === 'login' ? 'Signed in' : 'Account created');
+    toast(mode === 'login' ? 'Signed in' : 'Account created');
     
     // Reload LoRAs for this user
     fetchAvailableLoras();
@@ -4435,7 +4439,7 @@ async function handleAuth() {
     errorEl.textContent = 'Connection failed — server may be starting up. Try again in a few seconds.';
   } finally {
     btn.disabled = false;
-    btn.textContent = authMode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
+    btn.textContent = mode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
   }
 }
 
