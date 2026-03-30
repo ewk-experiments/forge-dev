@@ -1671,9 +1671,147 @@ html, body {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ─── Auth Overlay ─── */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-overlay.hidden { display: none; }
+
+.auth-box {
+  width: 340px;
+  padding: 40px;
+  border: 1px solid var(--border);
+}
+
+.auth-brand {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+}
+
+.auth-title {
+  font-family: var(--font-ui);
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.auth-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--text-label);
+  text-transform: uppercase;
+}
+
+.auth-input {
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  outline: none;
+}
+
+.auth-input:focus { border-color: var(--text); }
+
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s;
+}
+
+.auth-btn:hover { background: var(--accent-active); }
+.auth-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.auth-switch {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-label);
+  text-align: center;
+  margin-top: 16px;
+}
+
+.auth-switch a {
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.auth-error {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent-active);
+  margin-top: 8px;
+  min-height: 14px;
+}
+
+/* ─── Account menu ─── */
+.account-menu {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-label);
+  cursor: pointer;
+  padding: 0 8px;
+  transition: color 0.15s;
+}
+
+.account-menu:hover { color: var(--text); }
 </style>
 </head>
 <body>
+
+<!-- Auth Overlay -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-brand">ewk labs / forge</div>
+    <div class="auth-title" id="authTitle">Sign In</div>
+    <div class="auth-field">
+      <span class="auth-label">Email</span>
+      <input type="email" class="auth-input" id="authEmail" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <span class="auth-label">Password</span>
+      <input type="password" class="auth-input" id="authPassword" placeholder="6+ characters" autocomplete="current-password">
+    </div>
+    <button class="auth-btn" id="authBtn" onclick="handleAuth()">SIGN IN</button>
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-switch" id="authSwitch">
+      No account? <a onclick="toggleAuthMode()">Create one</a>
+    </div>
+  </div>
+</div>
 
 <!-- Top Bar -->
 <div class="topbar">
@@ -1702,7 +1840,7 @@ html, body {
     </div>
   </div>
   <div class="topbar-status">
-    <a href="/about.html" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;color:var(--text-label);text-decoration:none;margin-right:16px">ABOUT</a>
+    <span class="account-menu" id="accountMenu" onclick="handleLogout()" title="Sign Out"></span><a href="/about.html" style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;color:var(--text-label);text-decoration:none;margin-right:16px">ABOUT</a>
     <span class="status-dot ready" id="statusDot"></span>
     <span id="statusText">IDLE</span>
   </div>
@@ -2214,7 +2352,7 @@ const API = {
     process: 'https://heyitskim-ai--forge-postprocess-postprocessservice-serve.modal.run',
   },
   train: {
-    start: 'https://heyitskim-ai--forge-train-trainservice-serve.modal.run',
+    start: 'https://heyitskim-ai--forge-train-dev-trainservice-serve.modal.run',
   }
 };
 
@@ -4049,6 +4187,137 @@ document.querySelectorAll('.view-cell').forEach(cell => {
     }
   });
 });
+
+
+// ═══════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════
+let authMode = 'login'; // 'login' or 'signup'
+let authToken = localStorage.getItem('forge_token') || null;
+let authUser = JSON.parse(localStorage.getItem('forge_user') || 'null');
+
+function initAuth() {
+  if (authToken && authUser) {
+    // Verify token is still valid
+    fetch(API.train.start + '/auth/me', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    }).then(r => {
+      if (r.ok) {
+        r.json().then(data => {
+          showApp(data.email);
+        });
+      } else {
+        // Token expired
+        localStorage.removeItem('forge_token');
+        localStorage.removeItem('forge_user');
+        authToken = null;
+        authUser = null;
+        showAuth();
+      }
+    }).catch(() => showAuth());
+  } else {
+    showAuth();
+  }
+}
+
+function showAuth() {
+  document.getElementById('authOverlay').classList.remove('hidden');
+}
+
+function showApp(email) {
+  document.getElementById('authOverlay').classList.add('hidden');
+  document.getElementById('accountMenu').textContent = email.split('@')[0].toUpperCase();
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  document.getElementById('authTitle').textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+  document.getElementById('authBtn').textContent = authMode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
+  document.getElementById('authSwitch').innerHTML = authMode === 'login'
+    ? 'No account? <a onclick="toggleAuthMode()">Create one</a>'
+    : 'Have an account? <a onclick="toggleAuthMode()">Sign in</a>';
+  document.getElementById('authError').textContent = '';
+}
+
+async function handleAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errorEl = document.getElementById('authError');
+  const btn = document.getElementById('authBtn');
+  
+  if (!email || !password) { errorEl.textContent = 'Email and password required'; return; }
+  if (password.length < 6) { errorEl.textContent = 'Password must be 6+ characters'; return; }
+  
+  btn.disabled = true;
+  btn.textContent = 'LOADING...';
+  errorEl.textContent = '';
+  
+  try {
+    const endpoint = authMode === 'login' ? '/auth/login' : '/auth/signup';
+    const res = await fetch(API.train.start + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      errorEl.textContent = data.detail || data.message || 'Authentication failed';
+      return;
+    }
+    
+    // Save auth
+    authToken = data.token;
+    authUser = { user_id: data.user_id, email: data.email };
+    localStorage.setItem('forge_token', authToken);
+    localStorage.setItem('forge_user', JSON.stringify(authUser));
+    
+    showApp(data.email);
+    toast(authMode === 'login' ? 'Signed in' : 'Account created');
+    
+    // Reload LoRAs for this user
+    fetchAvailableLoras();
+  } catch (err) {
+    errorEl.textContent = 'Connection failed — try again';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = authMode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
+  }
+}
+
+function handleLogout() {
+  if (!confirm('Sign out?')) return;
+  localStorage.removeItem('forge_token');
+  localStorage.removeItem('forge_user');
+  authToken = null;
+  authUser = null;
+  showAuth();
+}
+
+// Add auth header to all API calls
+const _originalFetch = window.fetch;
+window.fetch = function(url, options = {}) {
+  if (authToken && typeof url === 'string' && url.includes('modal.run')) {
+    options.headers = options.headers || {};
+    if (typeof options.headers === 'object' && !Array.isArray(options.headers)) {
+      options.headers['Authorization'] = 'Bearer ' + authToken;
+    }
+  }
+  return _originalFetch.call(this, url, options);
+};
+
+// Handle Enter key in auth form
+document.getElementById('authPassword')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleAuth();
+});
+document.getElementById('authEmail')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('authPassword').focus();
+});
+
+// Init auth on load
+initAuth();
+
 </script>
 
 <!-- Image Lightbox -->
