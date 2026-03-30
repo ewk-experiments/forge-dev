@@ -2995,7 +2995,7 @@ function initThreeViewer() {
   threeRenderer.toneMappingExposure = 1.2;
   threeRenderer.outputEncoding = THREE.sRGBEncoding;
 
-  threeControls = new window.OrbitControls(threeCamera, threeRenderer.domElement);
+  threeControls = new THREE.OrbitControls(threeCamera, threeRenderer.domElement);
   threeControls.enableDamping = true;
   threeControls.dampingFactor = 0.1;
 
@@ -3130,7 +3130,7 @@ async function generateStep3() {
     state.s3.glbBlob = new Blob([arr], { type: 'model/gltf-binary' });
 
     const url = URL.createObjectURL(state.s3.glbBlob);
-    const loader = new window.GLTFLoader();
+    const loader = new THREE.GLTFLoader();
 
     if (state.s3.scene) threeScene.remove(state.s3.scene);
 
@@ -4522,10 +4522,10 @@ async function initAuth3D() {
   authScene.add(ground);
   
   // Load the shoe model
-  const loader = new window.GLTFLoader();
+  const loader = new THREE.GLTFLoader();
   loader.load('void-boot.glb', (gltf) => {
     authModel = gltf.scene;
-    console.log('Auth 3D model loaded');
+    console.log('Auth 3D model loaded, children:', authModel.children.length);
     
     // Apply matte material
     const mat = new THREE.MeshStandardMaterial({
@@ -4537,8 +4537,7 @@ async function initAuth3D() {
     authModel.traverse(child => {
       if (child.isMesh) {
         child.material = mat;
-        child.geometry.computeVertexNormals();
-        if (child.geometry.attributes.color) child.geometry.deleteAttribute('color');
+        if (child.geometry) child.geometry.computeVertexNormals();
       }
     });
     
@@ -4552,10 +4551,12 @@ async function initAuth3D() {
     authModel.position.sub(center.multiplyScalar(sc));
     authModel.position.y += size.y * sc / 2;
     
-    console.log('Auth model positioned, scale:', sc);
+    console.log('Auth model positioned, scale:', sc, 'size:', size);
     
     authScene.add(authModel);
-  });
+  }, 
+  (progress) => { console.log('Loading:', Math.round(progress.loaded / progress.total * 100) + '%'); },
+  (error) => { console.error('GLB load error:', error); });
   
   // Scroll-driven rotation
   const content = document.querySelector('.auth-content');
