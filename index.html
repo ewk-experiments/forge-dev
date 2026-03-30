@@ -4318,9 +4318,9 @@ document.querySelectorAll('.view-cell').forEach(cell => {
 // ═══════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════
-let authMode = 'login'; // 'login' or 'signup'
-let authToken = localStorage.getItem('forge_token') || null;
-let authUser = JSON.parse(localStorage.getItem('forge_user') || 'null');
+var authMode = 'login'; // 'login' or 'signup'
+var authToken = localStorage.getItem('forge_token') || null;
+var authUser = JSON.parse(localStorage.getItem('forge_user') || 'null');
 
 function initAuth() {
   if (authToken && authUser) {
@@ -4359,7 +4359,7 @@ function initAuth() {
 
 function showAuth() {
   document.getElementById('authOverlay').classList.remove('hidden');
-  initAuth3D();
+  setTimeout(function() { if (typeof initAuth3D === 'function') initAuth3D(); }, 100);
 }
 
 function showApp(email) {
@@ -4473,10 +4473,11 @@ document.getElementById('authEmail')?.addEventListener('keydown', (e) => {
 // ═══════════════════════════════════════════════════
 // AUTH 3D SCENE
 // ═══════════════════════════════════════════════════
-let authScene, authCamera, authRenderer, authModel, authAnimFrame;
+var authScene, authCamera, authRenderer, authModel, authAnimFrame;
 
-async function initAuth3D() {
+function initAuth3D() {
   if (!window.__threeReady) { setTimeout(initAuth3D, 200); return; }
+  if (authRenderer) return;
   
   const canvas = document.getElementById('authCanvas');
   if (!canvas) return;
