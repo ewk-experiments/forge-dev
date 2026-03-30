@@ -4616,7 +4616,10 @@ function destroyAuth3D() {
 // Init auth on load
 console.log('Running initAuth + initAuth3D');
 initAuth();
-initAuth3D();
+// Call initAuth3D with slight delay and retry to ensure DOM is ready
+setTimeout(initAuth3D, 50);
+setTimeout(initAuth3D, 500);
+setTimeout(initAuth3D, 2000);
 
 </script>
 
