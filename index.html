@@ -1904,8 +1904,9 @@ html, body {
 
 <!-- Auth Overlay — Premium Brutalist -->
 <div class="auth-overlay" id="authOverlay">
-  <!-- 3D Model Background -->
+  <!-- 3D Model Background (with image fallback) -->
   <canvas id="authCanvas"></canvas>
+  <img id="authHeroImg" src="hero.png" alt="" style="position:fixed;top:50%;left:55%;transform:translate(-50%,-50%);max-width:50vw;max-height:70vh;object-fit:contain;z-index:0;opacity:0.9;pointer-events:none;transition:opacity 1s ease">
   
   <!-- Scroll indicator -->
   <div class="auth-scroll-hint" id="authScrollHint">
@@ -4559,6 +4560,9 @@ function initAuth3D() {
     console.log('Auth model positioned, scale:', sc, 'size:', size);
     
     authScene.add(authModel);
+    // Hide fallback image since 3D is working
+    var heroImg = document.getElementById('authHeroImg');
+    if (heroImg) heroImg.style.opacity = '0';
   }, 
   (progress) => { console.log('Loading:', Math.round(progress.loaded / progress.total * 100) + '%'); },
   (error) => { console.error('GLB load error:', error); });
@@ -4616,10 +4620,15 @@ function destroyAuth3D() {
 // Init auth on load
 console.log('Running initAuth + initAuth3D');
 initAuth();
-// Call initAuth3D with slight delay and retry to ensure DOM is ready
-setTimeout(initAuth3D, 50);
-setTimeout(initAuth3D, 500);
-setTimeout(initAuth3D, 2000);
+// Ensure 3D scene initializes regardless of script timing
+if (document.readyState === 'complete') {
+  initAuth3D();
+} else {
+  window.addEventListener('load', initAuth3D);
+}
+// Safety net retries
+setTimeout(initAuth3D, 1000);
+setTimeout(initAuth3D, 3000);
 
 </script>
 
