@@ -4352,7 +4352,11 @@ function initAuth() {
       }
     }).catch(() => {
       clearTimeout(timeout);
-      // Cold start or network issue — show auth, don't clear token
+      // Cold start or network issue — clear stale token, show auth
+      localStorage.removeItem('forge_token');
+      localStorage.removeItem('forge_user');
+      authToken = null;
+      authUser = null;
       showAuth();
     });
   } else {
@@ -4451,10 +4455,10 @@ function handleLogout() {
   showAuth();
 }
 
-// Add auth header to all API calls
+// Add auth header to all API calls (except auth endpoints themselves)
 const _originalFetch = window.fetch;
 window.fetch = function(url, options = {}) {
-  if (authToken && typeof url === 'string' && url.includes('modal.run')) {
+  if (authToken && typeof url === 'string' && url.includes('modal.run') && !url.includes('/auth/')) {
     options.headers = options.headers || {};
     if (typeof options.headers === 'object' && !Array.isArray(options.headers)) {
       options.headers['Authorization'] = 'Bearer ' + authToken;
@@ -4488,8 +4492,8 @@ async function initAuth3D() {
   authScene.background = new THREE.Color(0xFAFAFA);
   
   authCamera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
-  authCamera.position.set(2, 0.8, 2);
-  authCamera.lookAt(0, 0.2, 0);
+  authCamera.position.set(0, 1.2, 3.5);
+  authCamera.lookAt(0, 0.4, 0);
   
   authRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
   authRenderer.setSize(window.innerWidth, window.innerHeight);
@@ -4528,6 +4532,7 @@ async function initAuth3D() {
   const loader = new window.GLTFLoader();
   loader.load('void-boot.glb', (gltf) => {
     authModel = gltf.scene;
+    console.log('Auth 3D model loaded');
     
     // Apply matte material
     const mat = new THREE.MeshStandardMaterial({
@@ -4549,10 +4554,12 @@ async function initAuth3D() {
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
-    const sc = 1.2 / maxDim;
+    const sc = 2.0 / maxDim;
     authModel.scale.multiplyScalar(sc);
     authModel.position.sub(center.multiplyScalar(sc));
     authModel.position.y += size.y * sc / 2;
+    
+    console.log('Auth model positioned, scale:', sc);
     
     authScene.add(authModel);
   });
@@ -4567,13 +4574,12 @@ async function initAuth3D() {
       
       if (authModel) {
         authModel.rotation.y = progress * Math.PI * 1.5;
-        authModel.position.y = 0.5 - progress * 0.3;
       }
       
-      // Move camera slightly
-      authCamera.position.x = 2 - progress * 1;
-      authCamera.position.z = 2 - progress * 0.5;
-      authCamera.lookAt(0, 0.2 - progress * 0.1, 0);
+      // Move camera on scroll
+      authCamera.position.x = progress * -1.5;
+      authCamera.position.y = 1.2 - progress * 0.4;
+      authCamera.lookAt(0, 0.4 - progress * 0.2, 0);
       
       // Fade scroll hint
       const hint = document.getElementById('authScrollHint');
