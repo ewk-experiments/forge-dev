@@ -4263,6 +4263,7 @@ function downloadLightbox() {
 
 // Pan with mouse drag
 const lbInner = document.getElementById('lightboxInner');
+if (lbInner) {
 lbInner.addEventListener('mousedown', (e) => {
   if (lbScale <= 1) return;
   lbDragging = true;
@@ -4270,6 +4271,7 @@ lbInner.addEventListener('mousedown', (e) => {
   lbStartY = e.clientY - lbY * lbScale;
   e.preventDefault();
 });
+}
 
 window.addEventListener('mousemove', (e) => {
   if (!lbDragging) return;
@@ -4281,7 +4283,7 @@ window.addEventListener('mousemove', (e) => {
 window.addEventListener('mouseup', () => { lbDragging = false; });
 
 // Zoom with scroll wheel
-document.getElementById('lightbox').addEventListener('wheel', (e) => {
+document.getElementById('lightbox')?.addEventListener('wheel', (e) => {
   e.preventDefault();
   zoomLightbox(e.deltaY < 0 ? 1.15 : 0.87);
 }, { passive: false });
