@@ -4359,7 +4359,6 @@ function initAuth() {
 
 function showAuth() {
   document.getElementById('authOverlay').classList.remove('hidden');
-  setTimeout(function() { if (typeof initAuth3D === 'function') initAuth3D(); }, 100);
 }
 
 function showApp(email) {
@@ -4481,7 +4480,10 @@ var authScene, authCamera, authRenderer, authModel, authAnimFrame;
 
 function initAuth3D() {
   if (!window.__threeReady) { setTimeout(initAuth3D, 200); return; }
-  if (authRenderer) return;
+  
+  var canvas = document.getElementById('authCanvas');
+  if (!canvas) { console.error('No authCanvas'); return; }
+  if (canvas.width > 400) { return; } // already initialized
   
   const canvas = document.getElementById('authCanvas');
   if (!canvas) return;
