@@ -1672,40 +1672,150 @@ html, body {
   transform: translateY(0);
 }
 
-/* ─── Auth Overlay ─── */
+/* ─── Auth Overlay — Premium Brutalist ─── */
 .auth-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg);
+  background: #FAFAFA;
   z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
 }
 
 .auth-overlay.hidden { display: none; }
 
+#authCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.auth-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  scroll-snap-type: y mandatory;
+}
+
+.auth-content::-webkit-scrollbar { display: none; }
+
+.auth-hero {
+  height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  padding: 60px;
+  scroll-snap-align: start;
+}
+
+.auth-hero-text {
+  max-width: 500px;
+}
+
+.auth-hero-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin-bottom: 12px;
+}
+
+.auth-hero-title {
+  font-family: var(--font-ui);
+  font-size: 72px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.auth-hero-sub {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.auth-scroll-hint {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.4;
+  transition: opacity 0.5s;
+}
+
+.auth-scroll-hint.faded { opacity: 0; }
+
+.auth-scroll-line {
+  width: 1px;
+  height: 40px;
+  background: var(--text);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-scroll-line::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: 0;
+  width: 1px;
+  height: 40px;
+  background: var(--accent-active);
+  animation: scrollPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0% { top: -40px; }
+  100% { top: 40px; }
+}
+
+.auth-login-section {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  background: rgba(250, 250, 250, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
 .auth-box {
-  width: 340px;
-  padding: 40px;
+  width: 360px;
+  padding: 48px;
+  background: var(--bg);
   border: 1px solid var(--border);
 }
 
-.auth-brand {
+.auth-box-label {
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.15em;
+  font-size: 9px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--text-dim);
-  margin-bottom: 32px;
+  color: var(--text-label);
+  margin-bottom: 8px;
 }
 
 .auth-title {
   font-family: var(--font-ui);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
 }
 
 .auth-field {
@@ -1792,23 +1902,46 @@ html, body {
 </head>
 <body>
 
-<!-- Auth Overlay -->
+<!-- Auth Overlay — Premium Brutalist -->
 <div class="auth-overlay" id="authOverlay">
-  <div class="auth-box">
-    <div class="auth-brand">ewk labs / forge</div>
-    <div class="auth-title" id="authTitle">Sign In</div>
-    <div class="auth-field">
-      <span class="auth-label">Email</span>
-      <input type="email" class="auth-input" id="authEmail" placeholder="you@example.com" autocomplete="email">
+  <!-- 3D Model Background -->
+  <canvas id="authCanvas"></canvas>
+  
+  <!-- Scroll indicator -->
+  <div class="auth-scroll-hint" id="authScrollHint">
+    <div class="auth-scroll-line"></div>
+  </div>
+
+  <!-- Content Layer -->
+  <div class="auth-content">
+    <!-- Hero Section (first viewport) -->
+    <div class="auth-hero">
+      <div class="auth-hero-text">
+        <div class="auth-hero-label">ewk labs</div>
+        <div class="auth-hero-title">FORGE</div>
+        <div class="auth-hero-sub">Design shoes with AI.<br>Train on any style. Generate. Print.</div>
+      </div>
     </div>
-    <div class="auth-field">
-      <span class="auth-label">Password</span>
-      <input type="password" class="auth-input" id="authPassword" placeholder="6+ characters" autocomplete="current-password">
-    </div>
-    <button class="auth-btn" id="authBtn" onclick="handleAuth()">SIGN IN</button>
-    <div class="auth-error" id="authError"></div>
-    <div class="auth-switch" id="authSwitch">
-      No account? <a onclick="toggleAuthMode()">Create one</a>
+
+    <!-- Login Section (second viewport, scrolls into view) -->
+    <div class="auth-login-section">
+      <div class="auth-box">
+        <div class="auth-box-label">ENTER</div>
+        <div class="auth-title" id="authTitle">Sign In</div>
+        <div class="auth-field">
+          <span class="auth-label">Email</span>
+          <input type="email" class="auth-input" id="authEmail" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <span class="auth-label">Password</span>
+          <input type="password" class="auth-input" id="authPassword" placeholder="6+ characters" autocomplete="current-password">
+        </div>
+        <button class="auth-btn" id="authBtn" onclick="handleAuth()">SIGN IN</button>
+        <div class="auth-error" id="authError"></div>
+        <div class="auth-switch" id="authSwitch">
+          No account? <a onclick="toggleAuthMode()">Create one</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -4222,10 +4355,12 @@ function initAuth() {
 
 function showAuth() {
   document.getElementById('authOverlay').classList.remove('hidden');
+  initAuth3D();
 }
 
 function showApp(email) {
   document.getElementById('authOverlay').classList.add('hidden');
+  destroyAuth3D();
   document.getElementById('accountMenu').textContent = email.split('@')[0].toUpperCase();
 }
 
@@ -4315,8 +4450,146 @@ document.getElementById('authEmail')?.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('authPassword').focus();
 });
 
+
+
+// ═══════════════════════════════════════════════════
+// AUTH 3D SCENE
+// ═══════════════════════════════════════════════════
+let authScene, authCamera, authRenderer, authModel, authAnimFrame;
+
+async function initAuth3D() {
+  if (!window.__threeReady) { setTimeout(initAuth3D, 200); return; }
+  
+  const canvas = document.getElementById('authCanvas');
+  if (!canvas) return;
+  
+  authScene = new THREE.Scene();
+  authScene.background = new THREE.Color(0xFAFAFA);
+  
+  authCamera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
+  authCamera.position.set(2, 0.8, 2);
+  authCamera.lookAt(0, 0.2, 0);
+  
+  authRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  authRenderer.setSize(window.innerWidth, window.innerHeight);
+  authRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  authRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  authRenderer.toneMappingExposure = 1.4;
+  authRenderer.outputColorSpace = THREE.SRGBColorSpace;
+  
+  // Dramatic studio lighting
+  const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+  authScene.add(ambient);
+  
+  const key = new THREE.DirectionalLight(0xffffff, 1.2);
+  key.position.set(4, 6, 3);
+  key.castShadow = true;
+  authScene.add(key);
+  
+  const fill = new THREE.DirectionalLight(0xffffff, 0.3);
+  fill.position.set(-3, 2, -2);
+  authScene.add(fill);
+  
+  const rim = new THREE.DirectionalLight(0xffffff, 0.6);
+  rim.position.set(-1, 3, -4);
+  authScene.add(rim);
+  
+  // Subtle ground plane
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(20, 20),
+    new THREE.MeshStandardMaterial({ color: 0xF0F0F0, roughness: 0.9 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.01;
+  authScene.add(ground);
+  
+  // Load the shoe model
+  const loader = new window.GLTFLoader();
+  loader.load('void-boot.glb', (gltf) => {
+    authModel = gltf.scene;
+    
+    // Apply matte material
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x1a1a1a,
+      roughness: 0.85,
+      metalness: 0.05,
+      side: THREE.DoubleSide,
+    });
+    authModel.traverse(child => {
+      if (child.isMesh) {
+        child.material = mat;
+        child.geometry.computeVertexNormals();
+        if (child.geometry.attributes.color) child.geometry.deleteAttribute('color');
+      }
+    });
+    
+    // Center and scale
+    const box = new THREE.Box3().setFromObject(authModel);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const sc = 1.2 / maxDim;
+    authModel.scale.multiplyScalar(sc);
+    authModel.position.sub(center.multiplyScalar(sc));
+    authModel.position.y += size.y * sc / 2;
+    
+    authScene.add(authModel);
+  });
+  
+  // Scroll-driven rotation
+  const content = document.querySelector('.auth-content');
+  if (content) {
+    content.addEventListener('scroll', () => {
+      const scrollY = content.scrollTop;
+      const maxScroll = content.scrollHeight - content.clientHeight;
+      const progress = scrollY / maxScroll;
+      
+      if (authModel) {
+        authModel.rotation.y = progress * Math.PI * 1.5;
+        authModel.position.y = 0.5 - progress * 0.3;
+      }
+      
+      // Move camera slightly
+      authCamera.position.x = 2 - progress * 1;
+      authCamera.position.z = 2 - progress * 0.5;
+      authCamera.lookAt(0, 0.2 - progress * 0.1, 0);
+      
+      // Fade scroll hint
+      const hint = document.getElementById('authScrollHint');
+      if (hint) hint.classList.toggle('faded', progress > 0.1);
+    });
+  }
+  
+  // Gentle idle rotation
+  let idleAngle = 0;
+  function animateAuth() {
+    authAnimFrame = requestAnimationFrame(animateAuth);
+    idleAngle += 0.002;
+    if (authModel && !document.querySelector('.auth-content')?.scrollTop) {
+      authModel.rotation.y = Math.sin(idleAngle) * 0.15;
+    }
+    authRenderer.render(authScene, authCamera);
+  }
+  animateAuth();
+  
+  // Resize
+  window.addEventListener('resize', () => {
+    if (!authRenderer) return;
+    authCamera.aspect = window.innerWidth / window.innerHeight;
+    authCamera.updateProjectionMatrix();
+    authRenderer.setSize(window.innerWidth, window.innerHeight);
+  });
+}
+
+function destroyAuth3D() {
+  if (authAnimFrame) cancelAnimationFrame(authAnimFrame);
+  if (authRenderer) authRenderer.dispose();
+  authScene = authCamera = authRenderer = authModel = null;
+}
+
 // Init auth on load
 initAuth();
+initAuth3D();
 
 </script>
 
