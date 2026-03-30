@@ -4331,23 +4331,30 @@ let authUser = JSON.parse(localStorage.getItem('forge_user') || 'null');
 
 function initAuth() {
   if (authToken && authUser) {
-    // Verify token is still valid
+    // Verify token is still valid (with timeout for cold start)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     fetch(API.train.start + '/auth/me', {
-      headers: { 'Authorization': 'Bearer ' + authToken }
+      headers: { 'Authorization': 'Bearer ' + authToken },
+      signal: controller.signal,
     }).then(r => {
+      clearTimeout(timeout);
       if (r.ok) {
         r.json().then(data => {
           showApp(data.email);
         });
       } else {
-        // Token expired
         localStorage.removeItem('forge_token');
         localStorage.removeItem('forge_user');
         authToken = null;
         authUser = null;
         showAuth();
       }
-    }).catch(() => showAuth());
+    }).catch(() => {
+      clearTimeout(timeout);
+      // Cold start or network issue — show auth, don't clear token
+      showAuth();
+    });
   } else {
     showAuth();
   }
@@ -4389,11 +4396,25 @@ async function handleAuth() {
   
   try {
     const endpoint = authMode === 'login' ? '/auth/login' : '/auth/signup';
-    const res = await fetch(API.train.start + endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    let res;
+    // Retry once on failure (Modal cold start can cause first request to fail)
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        res = await fetch(API.train.start + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        break;
+      } catch (fetchErr) {
+        if (attempt === 0) {
+          btn.textContent = 'CONNECTING...';
+          await new Promise(r => setTimeout(r, 3000));
+        } else {
+          throw fetchErr;
+        }
+      }
+    }
     
     const data = await res.json();
     
@@ -4414,7 +4435,7 @@ async function handleAuth() {
     // Reload LoRAs for this user
     fetchAvailableLoras();
   } catch (err) {
-    errorEl.textContent = 'Connection failed — try again';
+    errorEl.textContent = 'Connection failed — server may be starting up. Try again in a few seconds.';
   } finally {
     btn.disabled = false;
     btn.textContent = authMode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
