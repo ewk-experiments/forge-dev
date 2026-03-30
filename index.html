@@ -4479,6 +4479,7 @@ document.getElementById('authEmail')?.addEventListener('keydown', (e) => {
 var authScene, authCamera, authRenderer, authModel, authAnimFrame;
 
 function initAuth3D() {
+  console.log('initAuth3D called, threeReady:', window.__threeReady);
   if (!window.__threeReady) { setTimeout(initAuth3D, 200); return; }
   
   var canvas = document.getElementById('authCanvas');
@@ -4613,6 +4614,7 @@ function destroyAuth3D() {
 }
 
 // Init auth on load
+console.log('Running initAuth + initAuth3D');
 initAuth();
 initAuth3D();
 
