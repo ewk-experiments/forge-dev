@@ -1993,7 +1993,6 @@ html, body {
 <div class="auth-overlay" id="authOverlay">
   <!-- 3D Model Background (with image fallback) -->
   <canvas id="authCanvas"></canvas>
-  <img id="authHeroImg" src="hero.png" alt="" style="position:fixed;top:50%;left:55%;transform:translate(-50%,-50%);max-width:50vw;max-height:70vh;object-fit:contain;z-index:0;opacity:0.9;pointer-events:none;transition:opacity 1s ease">
   
   <!-- Scroll indicator -->
   <div class="auth-scroll-hint" id="authScrollHint">
@@ -4754,9 +4753,7 @@ function initAuth3D() {
     authScene.add(authModel);
     authScene.add(authModel2);
     window._authModel2 = authModel2; // keep reference for scroll rotation
-    // Hide fallback image since 3D is working
-    var heroImg = document.getElementById('authHeroImg');
-    if (heroImg) heroImg.style.opacity = '0';
+    
   }, 
   (progress) => { console.log('Loading:', Math.round(progress.loaded / progress.total * 100) + '%'); },
   (error) => { console.error('GLB load error:', error); });
