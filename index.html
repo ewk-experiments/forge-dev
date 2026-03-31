@@ -4573,14 +4573,16 @@ function initAuth3D() {
     var authModel2 = authModel.clone();
     authModel2.scale.x *= -1; // mirror on X axis
     
-    // Position as a pair with slight angle
-    var spacing = size.x * sc * 1.2;
-    authModel.position.x -= spacing / 2;
-    authModel2.position.x += spacing / 2;
+    // Position as a pair — diagonal layout like a lookbook shot
+    var spacing = size.x * sc * 0.6;
+    authModel.position.x -= spacing * 0.5;
+    authModel.position.z += spacing * 0.3;
+    authModel2.position.x += spacing * 0.5;
+    authModel2.position.z -= spacing * 0.3;
     
-    // Slight toe-out angle like a natural pair
-    authModel.rotation.y = 0.15;
-    authModel2.rotation.y = -0.15;
+    // Angled like they're mid-stride
+    authModel.rotation.y = 0.4;
+    authModel2.rotation.y = 0.4;
     
     console.log('Auth shoe pair positioned');
     
@@ -4603,8 +4605,10 @@ function initAuth3D() {
       const progress = scrollY / maxScroll;
       
       if (authModel) {
-        authModel.rotation.y = 0.15 + progress * Math.PI * 1.5;
-        if (window._authModel2) window._authModel2.rotation.y = -0.15 + progress * Math.PI * 1.5;
+        // Gentle rotation — just enough to show form, not enough to overlap
+        var rotAmount = progress * Math.PI * 0.4;
+        authModel.rotation.y = 0.4 + rotAmount;
+        if (window._authModel2) window._authModel2.rotation.y = 0.4 + rotAmount;
       }
       
       // Move camera on scroll
@@ -4624,8 +4628,9 @@ function initAuth3D() {
     authAnimFrame = requestAnimationFrame(animateAuth);
     idleAngle += 0.002;
     if (authModel && !document.querySelector('.auth-content')?.scrollTop) {
-      authModel.rotation.y = 0.15 + Math.sin(idleAngle) * 0.15;
-      if (window._authModel2) window._authModel2.rotation.y = -0.15 + Math.sin(idleAngle) * 0.15;
+      var sway = Math.sin(idleAngle) * 0.08;
+      authModel.rotation.y = 0.4 + sway;
+      if (window._authModel2) window._authModel2.rotation.y = 0.4 + sway;
     }
     authRenderer.render(authScene, authCamera);
   }
