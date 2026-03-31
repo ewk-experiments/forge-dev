@@ -4539,19 +4539,25 @@ function initAuth3D() {
     authModel = gltf.scene;
     console.log('Auth 3D model loaded, children:', authModel.children.length);
     
-    // Apply matte material
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0x1a1a1a,
-      roughness: 0.85,
-      metalness: 0.05,
-      side: THREE.DoubleSide,
+    // Keep original materials if they exist, otherwise apply matte
+    var hasTextures = false;
+    authModel.traverse(function(child) {
+      if (child.isMesh && child.material && child.material.map) hasTextures = true;
     });
-    authModel.traverse(child => {
-      if (child.isMesh) {
-        child.material = mat;
-        if (child.geometry) child.geometry.computeVertexNormals();
-      }
-    });
+    if (!hasTextures) {
+      var mat = new THREE.MeshStandardMaterial({
+        color: 0x1a1a1a,
+        roughness: 0.85,
+        metalness: 0.05,
+        side: THREE.DoubleSide,
+      });
+      authModel.traverse(function(child) {
+        if (child.isMesh) {
+          child.material = mat;
+          if (child.geometry) child.geometry.computeVertexNormals();
+        }
+      });
+    }
     
     // Center and scale
     const box = new THREE.Box3().setFromObject(authModel);
