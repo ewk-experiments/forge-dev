@@ -1788,10 +1788,93 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 80px;
   scroll-snap-align: start;
   background: rgba(250, 250, 250, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  padding: 0 60px;
+}
+
+/* ─── Pipeline Diagram ─── */
+.auth-pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 280px;
+}
+
+.auth-pipeline-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin-bottom: 24px;
+}
+
+.auth-pipe-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  position: relative;
+}
+
+.auth-pipe-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 24px;
+}
+
+.auth-pipe-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--text);
+  flex-shrink: 0;
+}
+
+.auth-pipe-connector {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+}
+
+.auth-pipe-info {
+  padding-bottom: 28px;
+}
+
+.auth-pipe-step:last-child .auth-pipe-info {
+  padding-bottom: 0;
+}
+
+.auth-pipe-step:last-child .auth-pipe-connector {
+  display: none;
+}
+
+.auth-pipe-num {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--text-label);
+  margin-bottom: 2px;
+}
+
+.auth-pipe-name {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.auth-pipe-desc {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--text-dim);
+  line-height: 1.4;
 }
 
 .auth-box {
@@ -1926,6 +2009,57 @@ html, body {
 
     <!-- Login Section (second viewport, scrolls into view) -->
     <div class="auth-login-section">
+      <!-- Pipeline Diagram -->
+      <div class="auth-pipeline">
+        <div class="auth-pipeline-title">How It Works</div>
+
+        <div class="auth-pipe-step">
+          <div class="auth-pipe-line"><div class="auth-pipe-dot"></div><div class="auth-pipe-connector"></div></div>
+          <div class="auth-pipe-info">
+            <div class="auth-pipe-num">00</div>
+            <div class="auth-pipe-name">Train</div>
+            <div class="auth-pipe-desc">Upload reference images to teach the AI your design style</div>
+          </div>
+        </div>
+
+        <div class="auth-pipe-step">
+          <div class="auth-pipe-line"><div class="auth-pipe-dot"></div><div class="auth-pipe-connector"></div></div>
+          <div class="auth-pipe-info">
+            <div class="auth-pipe-num">01</div>
+            <div class="auth-pipe-name">Generate</div>
+            <div class="auth-pipe-desc">Create new shoe concepts from text prompts in your trained style</div>
+          </div>
+        </div>
+
+        <div class="auth-pipe-step">
+          <div class="auth-pipe-line"><div class="auth-pipe-dot"></div><div class="auth-pipe-connector"></div></div>
+          <div class="auth-pipe-info">
+            <div class="auth-pipe-num">02</div>
+            <div class="auth-pipe-name">Multi-View</div>
+            <div class="auth-pipe-desc">Generate front, back, top, and bottom reference views</div>
+          </div>
+        </div>
+
+        <div class="auth-pipe-step">
+          <div class="auth-pipe-line"><div class="auth-pipe-dot"></div><div class="auth-pipe-connector"></div></div>
+          <div class="auth-pipe-info">
+            <div class="auth-pipe-num">03</div>
+            <div class="auth-pipe-name">3D Model</div>
+            <div class="auth-pipe-desc">Reconstruct a full 3D mesh from your views using Hunyuan3D</div>
+          </div>
+        </div>
+
+        <div class="auth-pipe-step">
+          <div class="auth-pipe-line"><div class="auth-pipe-dot"></div></div>
+          <div class="auth-pipe-info">
+            <div class="auth-pipe-num">04</div>
+            <div class="auth-pipe-name">Produce</div>
+            <div class="auth-pipe-desc">Choose a modeler and print service to manufacture your design</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sign In -->
       <div class="auth-box">
         <div class="auth-box-label">ENTER</div>
         <div class="auth-title" id="authTitle">Sign In</div>
