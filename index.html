@@ -4575,14 +4575,14 @@ function initAuth3D() {
     
     // Position as a pair — diagonal layout like a lookbook shot
     var spacing = size.x * sc * 0.9;
-    authModel.position.x -= spacing * 0.6;
-    authModel.position.z += spacing * 0.2;
-    authModel2.position.x += spacing * 0.6;
-    authModel2.position.z -= spacing * 0.2;
+    authModel.position.x -= spacing * 0.5;
+    authModel.position.z += spacing * 0.15;
+    authModel2.position.x += spacing * 0.5;
+    authModel2.position.z -= spacing * 0.15;
     
-    // Angled like they're mid-stride
-    authModel.rotation.y = 0.4;
-    authModel2.rotation.y = 0.4;
+    // Both facing same direction — the mirror already flips the form
+    authModel.rotation.y = -0.3;
+    authModel2.rotation.y = 0.3;
     
     console.log('Auth shoe pair positioned');
     
@@ -4605,10 +4605,9 @@ function initAuth3D() {
       const progress = scrollY / maxScroll;
       
       if (authModel) {
-        // Gentle rotation — just enough to show form, not enough to overlap
         var rotAmount = progress * Math.PI * 0.4;
-        authModel.rotation.y = 0.4 + rotAmount;
-        if (window._authModel2) window._authModel2.rotation.y = 0.4 + rotAmount;
+        authModel.rotation.y = -0.3 + rotAmount;
+        if (window._authModel2) window._authModel2.rotation.y = 0.3 + rotAmount;
       }
       
       // Move camera on scroll
@@ -4629,8 +4628,8 @@ function initAuth3D() {
     idleAngle += 0.002;
     if (authModel && !document.querySelector('.auth-content')?.scrollTop) {
       var sway = Math.sin(idleAngle) * 0.08;
-      authModel.rotation.y = 0.4 + sway;
-      if (window._authModel2) window._authModel2.rotation.y = 0.4 + sway;
+      authModel.rotation.y = -0.3 + sway;
+      if (window._authModel2) window._authModel2.rotation.y = 0.3 + sway;
     }
     authRenderer.render(authScene, authCamera);
   }
