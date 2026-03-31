@@ -4564,14 +4564,29 @@ function initAuth3D() {
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
-    const sc = 2.0 / maxDim;
+    const sc = 1.6 / maxDim;
     authModel.scale.multiplyScalar(sc);
     authModel.position.sub(center.multiplyScalar(sc));
     authModel.position.y += size.y * sc / 2;
     
-    console.log('Auth model positioned, scale:', sc, 'size:', size);
+    // Create a pair — mirror the second shoe
+    var authModel2 = authModel.clone();
+    authModel2.scale.x *= -1; // mirror on X axis
+    
+    // Position as a pair with slight angle
+    var spacing = size.x * sc * 0.7;
+    authModel.position.x -= spacing / 2;
+    authModel2.position.x += spacing / 2;
+    
+    // Slight toe-out angle like a natural pair
+    authModel.rotation.y = 0.15;
+    authModel2.rotation.y = -0.15;
+    
+    console.log('Auth shoe pair positioned');
     
     authScene.add(authModel);
+    authScene.add(authModel2);
+    window._authModel2 = authModel2; // keep reference for scroll rotation
     // Hide fallback image since 3D is working
     var heroImg = document.getElementById('authHeroImg');
     if (heroImg) heroImg.style.opacity = '0';
@@ -4588,7 +4603,8 @@ function initAuth3D() {
       const progress = scrollY / maxScroll;
       
       if (authModel) {
-        authModel.rotation.y = progress * Math.PI * 1.5;
+        authModel.rotation.y = 0.15 + progress * Math.PI * 1.5;
+        if (window._authModel2) window._authModel2.rotation.y = -0.15 + progress * Math.PI * 1.5;
       }
       
       // Move camera on scroll
@@ -4608,7 +4624,8 @@ function initAuth3D() {
     authAnimFrame = requestAnimationFrame(animateAuth);
     idleAngle += 0.002;
     if (authModel && !document.querySelector('.auth-content')?.scrollTop) {
-      authModel.rotation.y = Math.sin(idleAngle) * 0.15;
+      authModel.rotation.y = 0.15 + Math.sin(idleAngle) * 0.15;
+      if (window._authModel2) window._authModel2.rotation.y = -0.15 + Math.sin(idleAngle) * 0.15;
     }
     authRenderer.render(authScene, authCamera);
   }
