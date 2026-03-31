@@ -2447,6 +2447,7 @@ html, body {
 <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.145.0/examples/js/loaders/DRACOLoader.js"></script>
 <script>
   if (window.THREE && THREE.OrbitControls && THREE.GLTFLoader) {
     window.OrbitControls = THREE.OrbitControls;
@@ -4529,9 +4530,12 @@ function initAuth3D() {
   ground.position.y = -0.01;
   authScene.add(ground);
   
-  // Load the shoe model
+  // Load the shoe model (Draco-compressed Hunyuan shoe)
   const loader = new THREE.GLTFLoader();
-  loader.load('void-boot.glb', (gltf) => {
+  const dracoLoader = new THREE.DRACOLoader();
+  dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.145.0/examples/js/libs/draco/');
+  loader.setDRACOLoader(dracoLoader);
+  loader.load('shoe-hero.glb', (gltf) => {
     authModel = gltf.scene;
     console.log('Auth 3D model loaded, children:', authModel.children.length);
     
