@@ -2158,7 +2158,7 @@ html, body {
         <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-label);line-height:1.6;margin-top:8px" id="s0Info">
           Training teaches the model your design language. After training, Step 1 will generate shoes in your style.
           <br><br>
-          Estimated time: ~15 min on A100
+          <span id="s0TimeEstimate">Estimated time: ~15 min on A100</span>
         </div>
       </div>
     </div>
@@ -3584,6 +3584,10 @@ function renderS0Grid() {
   if (s0Images.length >= 5) {
     const recommended = Math.max(500, Math.min(5000, s0Images.length * 28));
     document.getElementById('s0Steps').value = recommended;
+    // Update time estimate (~5 sec per step on A100)
+    const minutes = Math.round(recommended * 5 / 60);
+    var timeEl = document.getElementById('s0TimeEstimate');
+    if (timeEl) timeEl.textContent = 'Estimated time: ~' + minutes + ' min on A100 (' + recommended + ' steps)';
   }
   
   if (s0Images.length === 0) {
@@ -3778,9 +3782,15 @@ async function fetchAvailableLoras() {
   }
 }
 
+// Store lora data for later reference
+var _loraData = {};
+
 function renderStyleLibrary(loras) {
   const grid = document.getElementById('s0LibraryGrid');
   if (!grid) return;
+  
+  // Store for selectLibraryStyle
+  loras.forEach(l => { _loraData[l.name] = l; });
   
   if (loras.length === 0) {
     grid.innerHTML = '<div style="font-family:var(--font-mono);font-size:9px;color:var(--text-label);padding:8px;text-align:center">No trained styles yet</div>';
@@ -3790,14 +3800,17 @@ function renderStyleLibrary(loras) {
   grid.innerHTML = loras.map(lora => {
     const date = lora.trained_at ? new Date(lora.trained_at).toLocaleDateString() : '';
     const thumb = lora.sample_image ? `<img src="${lora.sample_image}" style="width:32px;height:32px;object-fit:cover;flex-shrink:0">` : `<div style="width:32px;height:32px;background:var(--surface);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:8px;color:var(--text-label)">--</div>`;
+    const sharedBadge = lora.shared ? '<span style="font-family:var(--font-mono);font-size:7px;letter-spacing:0.1em;color:var(--accent-active);padding:1px 4px;border:1px solid var(--accent-active);flex-shrink:0">PRESET</span>' : '';
+    const deleteBtn = lora.shared ? '' : `<div onclick="event.stopPropagation();deleteStyle('${lora.name}')" style="width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-label);cursor:pointer;flex-shrink:0" title="Delete">&times;</div>`;
     return `<div onclick="selectLibraryStyle('${lora.name}')" style="display:flex;align-items:center;gap:10px;padding:6px 8px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--text)'" onmouseout="this.style.borderColor='var(--border)'">
       ${thumb}
       <div style="flex:1;min-width:0;overflow:hidden">
         <div style="font-family:var(--font-mono);font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${lora.name}</div>
         <div style="font-family:var(--font-mono);font-size:8px;color:var(--text-label)">${lora.images_used || '?'} imgs / ${lora.steps_trained || '?'} steps${date ? ' / ' + date : ''}</div>
       </div>
+      ${sharedBadge}
       <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-label);flex-shrink:0">${lora.size_mb}MB</div>
-      <div onclick="event.stopPropagation();deleteStyle('${lora.name}')" style="width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-label);cursor:pointer;flex-shrink:0" title="Delete">&times;</div>
+      ${deleteBtn}
     </div>`;
   }).join('');
 }
@@ -3808,7 +3821,21 @@ function selectLibraryStyle(name) {
   document.getElementById('s1LoraSelect').value = name;
   document.getElementById('s0StyleName').value = name;
   document.getElementById('s0Trigger').value = 'in the style of [' + name + ']';
-  toast('Style "' + name + '" selected — switch to Step 1 to generate');
+  
+  // Show training images in the left panel
+  var lora = _loraData[name];
+  if (lora && lora.training_images && lora.training_images.length > 0) {
+    var grid = document.getElementById('s0ImageGrid');
+    var container = document.getElementById('s0Grid');
+    container.style.display = 'block';
+    document.getElementById('s0Empty').style.display = 'none';
+    grid.innerHTML = lora.training_images.map(function(img) {
+      return '<div style="aspect-ratio:1;background:var(--surface);border:1px solid var(--border);overflow:hidden"><img src="' + img + '" style="width:100%;height:100%;object-fit:cover"></div>';
+    }).join('');
+    document.getElementById('s0ImageCount').textContent = lora.training_images.length + ' images (from saved style)';
+  }
+  
+  toast('Style "' + name + '" loaded');
 }
 
 async function deleteStyle(name) {
