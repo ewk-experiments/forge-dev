@@ -4574,11 +4574,11 @@ function initAuth3D() {
     authModel2.scale.x *= -1; // mirror on X axis
     
     // Position as a pair — diagonal layout like a lookbook shot
-    var spacing = size.x * sc * 0.6;
-    authModel.position.x -= spacing * 0.5;
-    authModel.position.z += spacing * 0.3;
-    authModel2.position.x += spacing * 0.5;
-    authModel2.position.z -= spacing * 0.3;
+    var spacing = size.x * sc * 0.9;
+    authModel.position.x -= spacing * 0.6;
+    authModel.position.z += spacing * 0.2;
+    authModel2.position.x += spacing * 0.6;
+    authModel2.position.z -= spacing * 0.2;
     
     // Angled like they're mid-stride
     authModel.rotation.y = 0.4;
