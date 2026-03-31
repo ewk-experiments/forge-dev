@@ -1806,11 +1806,13 @@ html, body {
 
 .auth-pipeline-title {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.2em;
+  font-size: 8px;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--text-label);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
 }
 
 .auth-pipe-step {
@@ -1855,26 +1857,28 @@ html, body {
 
 .auth-pipe-num {
   font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.1em;
+  font-size: 7px;
+  letter-spacing: 0.15em;
   color: var(--text-label);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .auth-pipe-name {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text);
-  margin-bottom: 3px;
+  margin-bottom: 4px;
+  letter-spacing: 0.01em;
 }
 
 .auth-pipe-desc {
-  font-family: var(--font-ui);
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 9px;
   font-weight: 300;
   color: var(--text-dim);
-  line-height: 1.4;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
 }
 
 .auth-box {
@@ -2009,52 +2013,52 @@ html, body {
 
     <!-- Login Section (second viewport, scrolls into view) -->
     <div class="auth-login-section">
-      <!-- Pipeline Diagram -->
+      <!-- Pipeline Diagram — Technical Spec -->
       <div class="auth-pipeline">
-        <div class="auth-pipeline-title">How It Works</div>
+        <div class="auth-pipeline-title">Pipeline Architecture</div>
 
         <div class="auth-pipe-step">
           <div class="auth-pipe-line"><div class="auth-pipe-dot"></div><div class="auth-pipe-connector"></div></div>
           <div class="auth-pipe-info">
-            <div class="auth-pipe-num">00</div>
-            <div class="auth-pipe-name">Train</div>
-            <div class="auth-pipe-desc">Upload reference images to teach the AI your design style</div>
+            <div class="auth-pipe-num">STEP 00</div>
+            <div class="auth-pipe-name">LoRA Training</div>
+            <div class="auth-pipe-desc">FLUX.2 Klein 4B + DreamBooth LoRA fine-tuning. ~28 passes/image on A100 80GB. Rank-16 adapter weights. Custom style embedding from 20-150 reference images.</div>
           </div>
         </div>
 
         <div class="auth-pipe-step">
           <div class="auth-pipe-line"><div class="auth-pipe-dot"></div><div class="auth-pipe-connector"></div></div>
           <div class="auth-pipe-info">
-            <div class="auth-pipe-num">01</div>
-            <div class="auth-pipe-name">Generate</div>
-            <div class="auth-pipe-desc">Create new shoe concepts from text prompts in your trained style</div>
+            <div class="auth-pipe-num">STEP 01</div>
+            <div class="auth-pipe-name">Latent Diffusion</div>
+            <div class="auth-pipe-desc">Text-conditioned image synthesis via FLUX.2 Klein 4B with LoRA injection. 4-step inference, 1024x1024px output. CFG-free architecture.</div>
           </div>
         </div>
 
         <div class="auth-pipe-step">
           <div class="auth-pipe-line"><div class="auth-pipe-dot"></div><div class="auth-pipe-connector"></div></div>
           <div class="auth-pipe-info">
-            <div class="auth-pipe-num">02</div>
-            <div class="auth-pipe-name">Multi-View</div>
-            <div class="auth-pipe-desc">Generate front, back, top, and bottom reference views</div>
+            <div class="auth-pipe-num">STEP 02</div>
+            <div class="auth-pipe-name">Multi-View Synthesis</div>
+            <div class="auth-pipe-desc">FLUX Kontext-guided view generation. Orthographic projections: front, back, top, bottom. Structural consistency enforced via reference conditioning.</div>
           </div>
         </div>
 
         <div class="auth-pipe-step">
           <div class="auth-pipe-line"><div class="auth-pipe-dot"></div><div class="auth-pipe-connector"></div></div>
           <div class="auth-pipe-info">
-            <div class="auth-pipe-num">03</div>
-            <div class="auth-pipe-name">3D Model</div>
-            <div class="auth-pipe-desc">Reconstruct a full 3D mesh from your views using Hunyuan3D</div>
+            <div class="auth-pipe-num">STEP 03</div>
+            <div class="auth-pipe-name">3D Reconstruction</div>
+            <div class="auth-pipe-desc">Hunyuan3D-2.1 sparse-view reconstruction. Neural implicit surface → marching cubes extraction. Octree resolution 256-768. PBR material estimation. GLB output.</div>
           </div>
         </div>
 
         <div class="auth-pipe-step">
           <div class="auth-pipe-line"><div class="auth-pipe-dot"></div></div>
           <div class="auth-pipe-info">
-            <div class="auth-pipe-num">04</div>
-            <div class="auth-pipe-name">Produce</div>
-            <div class="auth-pipe-desc">Choose a modeler and print service to manufacture your design</div>
+            <div class="auth-pipe-num">STEP 04</div>
+            <div class="auth-pipe-name">Production</div>
+            <div class="auth-pipe-desc">Mesh refinement pipeline. Retopology, wall thickness analysis, print-readiness verification. SLS/SLA/FDM/MJF fabrication. PA12, TPU, resin substrates.</div>
           </div>
         </div>
       </div>
